@@ -200,21 +200,11 @@ static NSMapTable *interstitialAdapterDelegates;
 /// Find closest supported ad size from a given ad size.
 /// Returns nil if no supported size matches.
 - (CGSize)GADSupportedAdSizeFromRequestedSize:(GADAdSize)gadAdSize {
-  GADAdSize banner = GADAdSizeFromCGSize(CGSizeMake(320, 50));
-  GADAdSize mRect = GADAdSizeFromCGSize(CGSizeMake(300, 250));
-  GADAdSize leaderboard = GADAdSizeFromCGSize(CGSizeMake(728, 90));
-  NSArray *potentials = @[
-    NSValueFromGADAdSize(banner), NSValueFromGADAdSize(mRect), NSValueFromGADAdSize(leaderboard)
-  ];
-  GADAdSize closestSize = GADClosestValidSizeForAdSizes(gadAdSize, potentials);
-  if (IsGADAdSizeValid(closestSize)) {
-    return CGSizeFromGADAdSize(closestSize);
-  }
-
-  MPLogDebug(@"Unable to retrieve supported size from GADAdSize: %@",
-             NSStringFromGADAdSize(gadAdSize));
-
-  return CGSizeZero;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        return CGSizeMake(320, 50);
+    } else {
+        return CGSizeMake(728, 90);
+    }
 }
 
 - (void)getBannerWithSize:(GADAdSize)adSize {
