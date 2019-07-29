@@ -1,4 +1,5 @@
 #import "GADMAdapterVungleRewardedAd.h"
+#include <stdatomic.h>
 #import "GADMAdapterVungleConstants.h"
 #import "GADMAdapterVungleUtils.h"
 #import "VungleRouter.h"
@@ -14,14 +15,32 @@
 @implementation GADMAdapterVungleRewardedAd
 
 // To check if the ad is presenting so that we don't call 'adLoadCompletionHandler' twice.
-BOOL _isAdPresenting;
+BOOL _isRewardedAdPresenting;
 
 - (instancetype)initWithAdConfiguration:(GADMediationRewardedAdConfiguration *)adConfiguration
                       completionHandler:(GADMediationRewardedLoadCompletionHandler)handler {
   self = [super init];
   if (self) {
     self.adConfiguration = adConfiguration;
-    self.adLoadCompletionHandler = handler;
+
+    __block atomic_flag adLoadHandlerCalled = ATOMIC_FLAG_INIT;
+    __block GADMediationRewardedLoadCompletionHandler origAdLoadHandler = [handler copy];
+
+    // Ensure the original completion handler is only called once, and is deallocated once called.
+    self.adLoadCompletionHandler = ^id<GADMediationRewardedAdEventDelegate>(
+        id<GADMediationRewardedAd> rewardedAd, NSError *error) {
+      if (atomic_flag_test_and_set(&adLoadHandlerCalled)) {
+        return nil;
+      }
+
+      id<GADMediationRewardedAdEventDelegate> delegate = nil;
+      if (origAdLoadHandler) {
+        delegate = origAdLoadHandler(rewardedAd, error);
+      }
+
+      origAdLoadHandler = nil;
+      return delegate;
+    };
   }
   return self;
 }
@@ -64,7 +83,7 @@ BOOL _isAdPresenting;
 }
 
 - (void)presentFromViewController:(nonnull UIViewController *)viewController {
-  _isAdPresenting = YES;
+  _isRewardedAdPresenting = YES;
   if (![[VungleRouter sharedInstance] playAd:viewController
                                     delegate:self
                                       extras:[self.adConfiguration extras]]) {
@@ -90,7 +109,7 @@ BOOL _isAdPresenting;
 }
 
 - (void)adAvailable {
-  if (!_isAdPresenting) {
+  if (!_isRewardedAdPresenting) {
     self.delegate = self.adLoadCompletionHandler(self, nil);
   }
 }
@@ -112,7 +131,7 @@ BOOL _isAdPresenting;
 }
 
 - (void)willCloseAd:(BOOL)completedView didDownload:(BOOL)didDownload {
-  _isAdPresenting = NO;
+  _isRewardedAdPresenting = NO;
   [self.delegate willDismissFullScreenView];
 }
 
