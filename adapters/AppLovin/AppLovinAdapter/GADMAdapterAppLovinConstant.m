@@ -19,15 +19,11 @@
 }
 
 + (NSString *)adapterVersion {
-  return @"6.6.1.0";
+  return @"6.8.0.0";
 }
 
 + (NSString *)sdkKey {
   return @"sdkKey";
-}
-
-+ (NSString *)placementKey {
-  return @"placement";
 }
 
 + (NSString *)zoneIdentifierKey {
