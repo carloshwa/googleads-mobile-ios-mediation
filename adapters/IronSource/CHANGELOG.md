@@ -1,5 +1,8 @@
 ## IronSource iOS Mediation Adapter Changelog
 
+#### Version 6.8.5.0
+- Verified compatibility with ironSource SDK version 6.8.5
+
 #### Version 6.8.4.1.0
 - Verified compatibility with ironSource SDK version 6.8.4.1.
 
