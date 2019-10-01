@@ -402,7 +402,7 @@ static NSMapTable<NSString *, GADMAdapterMoPub *> *GADMInterstitialAdapterDelega
     GADMAdapterMoPub __weak* weakSelf = self;
     [_imageDownloadQueue
         addDownloadImageURLs:imageURLs
-             completionBlock:^(NSArray *errors) {
+             completionBlock:^(NSDictionary <NSURL *, UIImage *> *result, NSArray *errors) {
                GADMAdapterMoPub *strongSelf = weakSelf;
                if (strongSelf) {
                  if (errors.count == 0) {
